@@ -26,7 +26,7 @@ function BallRow({
 }) {
   const dashCount = Math.max(0, padTo - numbers.length)
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3 justify-between sm:justify-start">
       <span className="sm:w-36 w-34 shrink-0">{label}</span>
       <div className="flex gap-1.5 flex-wrap">
         {numbers.length === 0 && dashCount === 0 ? (

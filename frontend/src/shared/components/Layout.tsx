@@ -7,7 +7,7 @@ export function Layout({ children }: LayoutProps) {
       {/* Header */}
       <header className="px-5 flex items-center gap-3 shadow-sm bg-lottery-header">
         <img src={logo} alt="Logo" className="w-7 h-7" />
-        <h1 className="text-[40px] font-bold text-white">
+        <h1 className="sm:text-[40px] text-[36px] font-bold text-white">
           Lottery Simulator
         </h1>
       </header>
