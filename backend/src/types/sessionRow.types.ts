@@ -1,14 +1,15 @@
-import type { PlayerMode, SessionStatus } from './session.types'
-import type { SessionStats } from './stats.types'
+import type { PlayerMode } from './playerMode.types'
+import type { SessionStatus } from './sessionStatus.types'
+import type { SessionStats } from './sessionStats.types'
 
-/** Matches the DB row shape (snake_case column names) */
+/** Matches the Prisma model shape (camelCase field names) */
 export interface SessionRow {
   id: string
-  player_mode: PlayerMode
-  player_numbers: number[] | null
-  draw_number: number
+  playerMode: PlayerMode
+  playerNumbers: number[]
+  drawNumber: number
   stats: SessionStats
   status: SessionStatus
-  started_at: Date
-  ended_at: Date | null
+  startedAt: Date
+  endedAt: Date | null
 }

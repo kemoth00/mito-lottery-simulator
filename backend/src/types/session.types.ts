@@ -1,3 +1,2 @@
-export type PlayerMode = 'fixed' | 'random'
-
-export type SessionStatus = 'active' | 'jackpot' | 'max_draws_reached' | 'stopped'
+export type { PlayerMode } from './playerMode.types'
+export type { SessionStatus } from './sessionStatus.types'

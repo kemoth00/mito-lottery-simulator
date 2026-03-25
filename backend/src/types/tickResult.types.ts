@@ -1,5 +1,5 @@
-import type { SessionStats } from './stats.types'
-import type { SessionStatus } from './session.types'
+import type { SessionStats } from './sessionStats.types'
+import type { SessionStatus } from './sessionStatus.types'
 
 export interface TickResult {
   draw: number[]
