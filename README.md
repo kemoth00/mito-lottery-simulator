@@ -174,3 +174,130 @@ All request bodies are validated with Zod schemas before reaching route handlers
 **Testing with Vitest**
 Unit tests cover `drawLogic.ts` and `simulationEngine.ts` — the pure-function core. Integration tests (optional) can test repositories against a real DB using a test-scoped schema.
 
+---
+
+### Frontend
+
+#### Overview
+
+The frontend is a **React 18 + Vite + TypeScript** application styled with **Tailwind CSS**. It is purely presentational — all game logic lives on the backend. The UI drives the simulation tick-by-tick via REST polling and renders whatever the backend returns.
+
+#### Directory structure
+
+```
+frontend/src/
+│
+├── features/
+│   ├── simulation/
+│   │   ├── components/
+│   │   │   └── SpeedSlider.tsx          # 10ms–1000ms range, left=slow right=fast
+│   │   ├── hooks/
+│   │   │   └── useSimulation.ts         # polling loop, tick-in-flight guard, session lifecycle
+│   │   ├── store/
+│   │   │   └── simulationStore.ts       # status, sessionId, speed
+│   │   └── index.ts
+│   │
+│   ├── player/
+│   │   ├── components/
+│   │   │   ├── PlayerModeToggle.tsx     # "Play with random numbers" checkbox
+│   │   │   └── NumberGrid.tsx           # 9×10 grid, shown only in fixed mode
+│   │   ├── store/
+│   │   │   └── playerStore.ts           # mode (fixed|random), selectedNumbers: number[]
+│   │   └── index.ts
+│   │
+│   ├── draw/
+│   │   ├── components/
+│   │   │   └── DrawRow.tsx              # "Winning numbers" + "Your numbers" ball rows
+│   │   ├── store/
+│   │   │   └── drawStore.ts             # currentDraw, currentPlayerNumbers, matchCount
+│   │   └── index.ts
+│   │
+│   └── stats/
+│       ├── components/
+│       │   ├── StatsSummary.tsx         # teal box: tickets, years, cost
+│       │   └── WinsBreakdown.tsx        # 2×2 / 4-column responsive grid
+│       ├── store/
+│       │   └── statsStore.ts            # tickets, yearsElapsed, totalCost, wins
+│       └── index.ts
+│
+├── shared/
+│   ├── api/
+│   │   └── simulationApi.ts             # createSession, tick, stop
+│   ├── components/
+│   │   ├── Ball.tsx                     # lottery ball chip — variants: normal|matched|jackpot
+│   │   └── Layout.tsx                   # gradient header + page shell
+│   ├── constants.ts                     # MAX_PLAYER_NUMBERS, TOTAL_LOTTERY_NUMBERS, speed bounds
+│   ├── interfaces/                      # all TypeScript interfaces (one file each)
+│   │   ├── index.ts                     # barrel export
+│   │   ├── ballProps.interface.ts
+│   │   ├── createSessionResponse.interface.ts
+│   │   ├── drawState.interface.ts
+│   │   ├── layoutProps.interface.ts
+│   │   ├── playerState.interface.ts
+│   │   ├── sessionStats.interface.ts
+│   │   ├── simulationState.interface.ts
+│   │   ├── statsState.interface.ts
+│   │   ├── tickResponse.interface.ts
+│   │   └── winsBreakdown.interface.ts
+│   ├── types/                           # primitive type aliases + re-export shims → interfaces/
+│   │   ├── index.ts
+│   │   ├── playerMode.types.ts
+│   │   ├── sessionStatus.types.ts
+│   │   └── …
+│   └── utils/
+│       └── formatters.ts                # formatHuf(n), formatSpaced(n) — "1 234 567"
+│
+├── App.tsx
+├── main.tsx
+└── index.css
+```
+
+#### Start / Stop / Reset button
+
+A single adaptive button driven by `simulationStore.status`:
+
+| Status | Label | Action |
+|---|---|---|
+| `idle` | **Start** | `createSession()` → begin polling |
+| `running` | **Stop** | `POST /sessions/:id/stop` → halt polling |
+| `jackpot` / `max_draws_reached` / `stopped` | **Start again** | Reset all stores → `createSession()` → begin polling |
+
+#### NumberGrid (fixed mode)
+
+- 9 rows × 10 columns covering numbers 1–90
+- Tap a number → marks it with ✕ + teal highlight; it appears in "Your numbers" sorted ascending
+- Tap a marked number → removes it from the selection
+- Max 5 numbers; remaining unmarked cells are disabled until a selection is removed
+- The grid is disabled (read-only) while a simulation is running
+
+#### Tick guard
+
+```ts
+if (isTickInFlight.current) return   // don't stack requests
+isTickInFlight.current = true
+try { await tick() } finally { isTickInFlight.current = false }
+```
+
+Prevents request pile-up at the 10ms minimum speed.
+
+#### Jackpot state
+
+- Ball rows switch to a golden `jackpot` variant
+- The "5 matches" cell in WinsBreakdown gets a golden highlight
+- `yearsElapsed` in StatsSummary is highlighted
+- Polling stops; "Start again" button appears
+
+#### Key design decisions
+
+**Feature-based architecture**
+Each feature is a self-contained vertical slice (components + store + hooks). A feature never imports from another feature — only from `shared/`.
+
+**State management — Zustand**
+One lightweight store per feature. No boilerplate, no context providers, easy to reset on "Start again".
+
+**REST polling — frontend-driven ticks**
+The frontend fires `POST /tick` on each interval. Speed slider directly controls the `setInterval` delay. Changing speed mid-simulation takes effect on the next tick without restarting the session.
+
+**Session identity via store**
+`sessionId` is kept in `simulationStore` (Zustand) for the lifetime of the page. Two tabs = two independent sessions. No login, no user accounts — the spec's "multiple users" requirement is satisfied implicitly.
+

@@ -49,5 +49,23 @@ services:
       - ./frontend:/app
       - /app/node_modules
 
+  frontend-test:
+    build:
+      context: ./frontend
+      target: test
+    profiles: ["test"]
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+  backend-test:
+    build:
+      context: ./backend
+      target: test
+    profiles: ["test"]
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
 volumes:
   postgres_data:

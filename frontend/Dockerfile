@@ -11,6 +11,18 @@ EXPOSE 5173
 
 CMD ["npm", "run", "dev"]
 
+# ------- test runner -------
+FROM node:20-alpine AS test
+
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm install
+
+COPY . .
+
+CMD ["npm", "test"]
+
 # ------- production build -------
 FROM node:20-alpine AS build
 

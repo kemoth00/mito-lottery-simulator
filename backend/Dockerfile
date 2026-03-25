@@ -15,6 +15,20 @@ EXPOSE 3001
 
 CMD ["sh", "-c", "npx prisma migrate deploy && npm run dev"]
 
+# ------- test runner -------
+FROM node:20-alpine AS test
+
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm install --include=dev
+
+COPY . .
+
+RUN npx prisma generate
+
+CMD ["npm", "test"]
+
 # ------- production build -------
 FROM node:20-alpine AS build
 
