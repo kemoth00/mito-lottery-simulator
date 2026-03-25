@@ -77,6 +77,59 @@ Backend `backend/.env`:
 
 ---
 
+## Testing
+
+Both backend and frontend have unit test suites powered by **Vitest**.
+
+### Run locally
+
+```bash
+# Backend (31 tests — draw logic + simulation engine)
+cd backend && npm test
+
+# Frontend (44 tests — stores + formatters)
+cd frontend && npm test
+```
+
+### Run via Docker Compose (no local Node.js required)
+
+Run all test suites using the provided script — backend followed by frontend, exits non-zero if either fails:
+
+```bash
+./test.sh
+```
+
+Or run a single suite directly:
+
+```bash
+docker compose --profile test run --rm backend-test
+docker compose --profile test run --rm frontend-test
+```
+
+> **Why not `docker compose up --abort-on-container-exit`?**
+> That flag stops all containers the moment *any* one exits. Since backend tests finish in ~360ms and frontend tests take longer, the frontend container gets killed (SIGTERM) before it completes. Sequential `run --rm` avoids this entirely.
+
+### What is covered
+
+**Backend**
+
+| File | Tests | What is covered |
+|---|---|---|
+| `simulation/drawLogic.test.ts` | 13 | `generateNumbers` (uniqueness, range, sort), `countMatches`, `validatePlayerNumbers` |
+| `simulation/simulationEngine.test.ts` | 18 | Tick result shape, stats accumulation, jackpot / max-draws termination, random mode |
+
+**Frontend**
+
+| File | Tests | What is covered |
+|---|---|---|
+| `shared/utils/formatters.test.ts` | 8 | `formatSpaced` and `formatHuf` — digit preservation, HUF suffix, zero |
+| `features/player/store/playerStore.test.ts` | 10 | `setMode`, `toggleNumber` (add / remove / sort / 5-number cap), `reset` |
+| `features/draw/store/drawStore.test.ts` | 6 | `setDraw` stores all values and overwrites on repeat, `reset` |
+| `features/stats/store/statsStore.test.ts` | 7 | `setStats`, jackpot win scenario, `reset` to zero |
+| `features/simulation/store/simulationStore.test.ts` | 13 | All status transitions, `setSessionId`, `setSpeed`, `reset` |
+
+---
+
 ## Architecture
 
 ### Backend
