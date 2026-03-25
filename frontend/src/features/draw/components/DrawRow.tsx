@@ -27,7 +27,7 @@ function BallRow({
   const dashCount = Math.max(0, padTo - numbers.length)
   return (
     <div className="flex items-center gap-3">
-      <span className="w-36 shrink-0">{label}</span>
+      <span className="sm:w-36 w-34 shrink-0">{label}</span>
       <div className="flex gap-1.5 flex-wrap">
         {numbers.length === 0 && dashCount === 0 ? (
           Array.from({ length: 5 }).map((_, i) => <DashBall key={i} />)
