@@ -1,0 +1,6 @@
+export const MAX_PLAYER_NUMBERS = 5
+export const TOTAL_LOTTERY_NUMBERS = 90
+export const TICKET_PRICE_HUF = 300
+export const MIN_SIMULATION_SPEED = 10
+export const MAX_SIMULATION_SPEED = 1000
+export const DEFAULT_SIMULATION_SPEED = 500
