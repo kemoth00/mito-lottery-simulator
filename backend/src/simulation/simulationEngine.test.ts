@@ -12,13 +12,13 @@ import type { SessionRow } from '../types'
 
 const baseSession: SessionRow = {
   id: 'test-uuid',
-  player_mode: 'fixed',
-  player_numbers: [1, 2, 3, 4, 5],
-  draw_number: 0,
+  playerMode: 'fixed',
+  playerNumbers: [1, 2, 3, 4, 5],
+  drawNumber: 0,
   stats: { ...INITIAL_STATS, wins: { '2': 0, '3': 0, '4': 0, '5': 0 } },
   status: 'active',
-  started_at: new Date(),
-  ended_at: null,
+  startedAt: new Date(),
+  endedAt: null,
 }
 
 describe('calculateNextStats', () => {
@@ -102,7 +102,7 @@ describe('runTick', () => {
   })
 
   it('generates new player numbers each tick when playerMode is "random"', () => {
-    const session: SessionRow = { ...baseSession, player_mode: 'random', player_numbers: null }
+    const session: SessionRow = { ...baseSession, playerMode: 'random', playerNumbers: [] }
     const result = runTick(session)
     expect(result.playerNumbers).toHaveLength(5)
   })
@@ -116,7 +116,7 @@ describe('runTick', () => {
     // Use numbers that cannot appear in a draw: impossible since range is 1-90,
     // but we test the boundary draw_number logic via determineStatus which is fully covered above.
     // Here we just verify runTick reflects the terminal state correctly.
-    const session: SessionRow = { ...baseSession, draw_number: MAX_DRAWS - 1 }
+    const session: SessionRow = { ...baseSession, drawNumber: MAX_DRAWS - 1 }
     const result = runTick(session)
     expect(result.drawNumber).toBe(MAX_DRAWS)
     expect(['max_draws_reached', 'jackpot']).toContain(result.status)

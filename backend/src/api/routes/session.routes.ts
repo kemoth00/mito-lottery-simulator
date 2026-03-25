@@ -107,10 +107,10 @@ router.get('/:id/stats', async (req, res, next) => {
     res.json({
       sessionId: session.id,
       status: session.status,
-      playerMode: session.player_mode,
+      playerMode: session.playerMode,
       stats: session.stats,
-      startedAt: session.started_at,
-      endedAt: session.ended_at,
+      startedAt: session.startedAt,
+      endedAt: session.endedAt,
       winningDraws,
     })
   } catch (err) {

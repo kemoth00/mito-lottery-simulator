@@ -43,11 +43,11 @@ export function determineStatus(nextDrawNumber: number, matchCount: number): Ses
  */
 export function runTick(session: SessionRow): TickResult {
   const playerNumbers =
-    session.player_mode === 'random' ? generateNumbers() : (session.player_numbers as number[])
+    session.playerMode === 'random' ? generateNumbers() : session.playerNumbers
 
   const draw = generateNumbers()
   const matchCount = countMatches(playerNumbers, draw)
-  const nextDrawNumber = session.draw_number + 1
+  const nextDrawNumber = session.drawNumber + 1
 
   const stats = calculateNextStats(session.stats, nextDrawNumber, matchCount)
   const status = determineStatus(nextDrawNumber, matchCount)
