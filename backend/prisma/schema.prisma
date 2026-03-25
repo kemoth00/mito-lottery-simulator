@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  playerMode    PlayerMode   @map("player_mode")
+  playerNumbers Int[]        @map("player_numbers")
+  drawNumber    Int          @default(0) @map("draw_number")
+  stats         Json         @default("{\"tickets\":0,\"yearsElapsed\":0,\"totalCost\":0,\"wins\":{\"2\":0,\"3\":0,\"4\":0,\"5\":0}}")
+  status        SessionStatus @default(active)
+  startedAt     DateTime     @default(now()) @map("started_at")
+  endedAt       DateTime?    @map("ended_at")
+
+  drawResults   DrawResult[]
+
+  @@map("sessions")
+}
+
+model DrawResult {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId     String   @map("session_id") @db.Uuid
+  drawNumber    Int      @map("draw_number")
+  playerNumbers Int[]    @map("player_numbers")
+  drawNumbers   Int[]    @map("draw_numbers")
+  matchCount    Int      @map("match_count")
+  drawnAt       DateTime @default(now()) @map("drawn_at")
+
+  session       Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("draw_results")
+}
+
+enum PlayerMode {
+  fixed
+  random
+}
+
+enum SessionStatus {
+  active
+  jackpot
+  max_draws_reached
+  stopped
+}
