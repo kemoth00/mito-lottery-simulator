@@ -4,19 +4,24 @@ Full-stack lottery simulator built with React, Node.js, PostgreSQL, and Docker.
 
 ## Stack
 
-| Layer    | Technology                         |
-|----------|------------------------------------|
-| Frontend | React 18 + Vite + Tailwind CSS     |
-| Backend  | Node.js + Express                  |
-| Database | PostgreSQL 16                      |
-| DevOps   | Docker + Docker Compose            |
+| Layer    | Technology                              |
+|----------|-----------------------------------------|
+| Frontend | React 18 + Vite + Tailwind CSS          |
+| Backend  | Node.js + Express + TypeScript          |
+| ORM      | Prisma                                  |
+| Database | PostgreSQL 16                           |
+| DevOps   | Docker + Docker Compose                 |
 
 ## Project structure
 
 ```
 mito-lottery-simulator/
 ├── frontend/        # React + Vite + Tailwind CSS
-├── backend/         # Express API + pg
+├── backend/
+│   ├── prisma/
+│   │   ├── schema.prisma    # Prisma data model
+│   │   └── migrations/      # Auto-generated SQL migrations
+│   └── src/                 # Express API (TypeScript)
 ├── docker-compose.yml
 ├── .env             # Root env vars (Postgres credentials)
 └── .env.example
@@ -43,8 +48,10 @@ docker compose up --build
 
 ```bash
 # Backend
-cp backend/.env.example backend/.env   # edit DATABASE_URL if needed
-cd backend && npm install && npm run dev
+cp backend/.env.example backend/.env   # set DATABASE_URL
+cd backend && npm install
+npx prisma migrate deploy              # apply DB migrations
+npm run dev
 
 # Frontend (separate terminal)
 cd frontend && npm install && npm run dev
@@ -96,16 +103,15 @@ backend/src/
 │   └── simulationEngine.ts          # Stateless: run one tick, return result + updated stats
 │
 ├── db/
-│   ├── pool.ts                       # pg Pool singleton
-│   ├── migrate.ts                    # Runs SQL migrations on startup
-│   ├── migrations/
-│   │   └── 001_initial.sql           # sessions + draw_results tables
+│   ├── pool.ts                       # Prisma client singleton
 │   └── repositories/
 │       ├── sessionRepository.ts      # CRUD for sessions
 │       └── drawResultRepository.ts   # Insert/query winning draws (match ≥ 2)
 │
 └── index.ts                          # Express app bootstrap
 ```
+
+The Prisma schema lives in `backend/prisma/schema.prisma`. Migrations are generated with `npx prisma migrate dev` and applied automatically on container start via `npx prisma migrate deploy`.
 
 #### API contract
 
@@ -140,6 +146,9 @@ backend/src/
 ```
 
 #### Key design decisions
+
+**ORM — Prisma**
+All DB access goes through the Prisma client. The schema in `prisma/schema.prisma` is the single source of truth for the data model. `prisma migrate deploy` is run automatically in the Docker dev container on startup.
 
 **TypeScript throughout**
 Both backend and frontend use TypeScript. Shared types (draw result shape, session status, stats) live close to their domain and are not shared across packages — each side defines what it needs.
